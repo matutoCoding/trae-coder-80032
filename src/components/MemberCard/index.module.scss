@@ -1,0 +1,71 @@
+@use '@/styles/variables.scss' as *;
+
+.memberCard {
+  display: flex;
+  align-items: center;
+  background: $color-bg-card;
+  border-radius: $radius-lg;
+  padding: $spacing-lg;
+  margin-bottom: $spacing-md;
+  box-shadow: $shadow-card;
+}
+
+.avatar {
+  width: 96rpx;
+  height: 96rpx;
+  border-radius: $radius-round;
+  margin-right: $spacing-md;
+  flex-shrink: 0;
+}
+
+.info {
+  flex: 1;
+  min-width: 0;
+}
+
+.nameRow {
+  display: flex;
+  align-items: center;
+  margin-bottom: 4rpx;
+}
+
+.name {
+  font-size: $font-size-lg;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+  margin-right: $spacing-sm;
+}
+
+.roleTag {
+  padding: 4rpx 12rpx;
+  background: $color-bg-tag;
+  border-radius: $radius-xs;
+  font-size: $font-size-xs;
+  color: $color-primary;
+
+  &.owner {
+    background: rgba($color-secondary, 0.1);
+    color: $color-secondary;
+  }
+
+  &.admin {
+    background: rgba($color-primary, 0.1);
+    color: $color-primary;
+  }
+}
+
+.subInfo {
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+  margin-bottom: 4rpx;
+}
+
+.stats {
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+}
+
+.statsHighlight {
+  color: $color-primary;
+  font-weight: $font-weight-medium;
+}

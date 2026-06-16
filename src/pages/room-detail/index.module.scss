@@ -1,0 +1,218 @@
+@use '@/styles/variables.scss' as *;
+
+.page {
+  min-height: 100vh;
+  padding-bottom: 180rpx;
+}
+
+.roomHeader {
+  position: relative;
+  height: 420rpx;
+}
+
+.roomImage {
+  width: 100%;
+  height: 100%;
+}
+
+.statusOverlay {
+  position: absolute;
+  top: $spacing-lg;
+  right: $page-padding;
+  padding: 8rpx 24rpx;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(10px);
+  border-radius: $radius-round;
+
+  .statusText {
+    font-size: $font-size-sm;
+    color: $color-text-white;
+    font-weight: $font-weight-medium;
+  }
+
+  &.available { background: rgba($color-room-available, 0.9); }
+  &.occupied { background: rgba($color-room-occupied, 0.9); }
+  &.full { background: rgba($color-room-full, 0.9); }
+  &.pending { background: rgba($color-room-pending, 0.9); }
+}
+
+.roomInfo {
+  background: $color-bg-card;
+  margin: -40rpx $page-padding 0;
+  border-radius: $radius-lg;
+  padding: $spacing-lg;
+  position: relative;
+  z-index: 2;
+  box-shadow: $shadow-card;
+}
+
+.roomTitle {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: $spacing-sm;
+}
+
+.roomName {
+  font-size: $font-size-xl;
+  font-weight: $font-weight-bold;
+  color: $color-text-primary;
+}
+
+.roomNumber {
+  font-size: $font-size-sm;
+  color: $color-text-tertiary;
+  padding: 4rpx 16rpx;
+  background: $color-bg-page;
+  border-radius: $radius-sm;
+}
+
+.roomLocation {
+  font-size: $font-size-md;
+  color: $color-text-secondary;
+  margin-bottom: $spacing-md;
+}
+
+.roomDesc {
+  font-size: $font-size-sm;
+  color: $color-text-tertiary;
+  line-height: $line-height-loose;
+  margin-bottom: $spacing-md;
+}
+
+.features {
+  display: flex;
+  flex-wrap: wrap;
+  gap: $spacing-sm;
+}
+
+.featureTag {
+  padding: 8rpx 20rpx;
+  background: $color-bg-tag;
+  border-radius: $radius-sm;
+  font-size: $font-size-xs;
+  color: $color-primary;
+}
+
+.priceRow {
+  display: flex;
+  align-items: baseline;
+  margin-top: $spacing-md;
+  padding-top: $spacing-md;
+  border-top: 1rpx solid $color-divider;
+}
+
+.priceValue {
+  font-size: $font-size-xxl;
+  font-weight: $font-weight-bold;
+  color: $color-secondary;
+}
+
+.priceUnit {
+  font-size: $font-size-sm;
+  color: $color-text-tertiary;
+  margin-left: 4rpx;
+}
+
+.section {
+  margin: $spacing-md $page-padding 0;
+}
+
+.sectionTitle {
+  font-size: $font-size-lg;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+  margin-bottom: $spacing-md;
+}
+
+.quotaNotice {
+  display: flex;
+  align-items: center;
+  background: rgba($color-primary, 0.08);
+  padding: $spacing-md $spacing-lg;
+  border-radius: $radius-md;
+  margin: $spacing-md $page-padding 0;
+  gap: $spacing-sm;
+}
+
+.noticeIcon {
+  font-size: $font-size-lg;
+}
+
+.noticeText {
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+  flex: 1;
+}
+
+.noticeHighlight {
+  color: $color-primary;
+  font-weight: $font-weight-semibold;
+}
+
+.bottomBar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: $color-bg-card;
+  padding: $spacing-md $page-padding;
+  padding-bottom: calc($spacing-md + env(safe-area-inset-bottom));
+  box-shadow: 0 -4rpx 16rpx rgba(0, 0, 0, 0.06);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  z-index: 100;
+}
+
+.selectedInfo {
+  flex: 1;
+}
+
+.selectedLabel {
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+  margin-bottom: 4rpx;
+}
+
+.selectedValue {
+  font-size: $font-size-md;
+  color: $color-text-primary;
+  font-weight: $font-weight-medium;
+}
+
+.actionBtns {
+  display: flex;
+  gap: $spacing-sm;
+}
+
+.actionBtn {
+  @include button-reset;
+  height: $button-height-lg;
+  padding: 0 $spacing-xl;
+  border-radius: $radius-button;
+  font-size: $font-size-md;
+  font-weight: $font-weight-semibold;
+  transition: all $transition-fast;
+
+  &:active {
+    opacity: 0.9;
+    transform: scale(0.96);
+  }
+
+  &.waitlist {
+    background: $color-bg-page;
+    color: $color-secondary;
+    border: 2rpx solid $color-secondary;
+  }
+
+  &.book {
+    background: linear-gradient(135deg, $color-primary 0%, $color-primary-light 100%);
+    color: $color-text-white;
+  }
+
+  &.disabled {
+    background: $color-text-disabled;
+    color: $color-text-white;
+  }
+}

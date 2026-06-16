@@ -1,0 +1,173 @@
+@use '@/styles/variables.scss' as *;
+
+.page {
+  min-height: 100vh;
+}
+
+.header {
+  padding: $spacing-xl $page-padding $spacing-lg;
+  background: linear-gradient(135deg, $color-primary 0%, $color-primary-light 100%);
+  border-bottom-left-radius: 32rpx;
+  border-bottom-right-radius: 32rpx;
+}
+
+.welcomeRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: $spacing-lg;
+}
+
+.welcomeText {
+  color: $color-text-white;
+}
+
+.hello {
+  font-size: $font-size-lg;
+  font-weight: $font-weight-semibold;
+  margin-bottom: 4rpx;
+}
+
+.subHello {
+  font-size: $font-size-sm;
+  opacity: 0.85;
+}
+
+.userAvatar {
+  width: 80rpx;
+  height: 80rpx;
+  border-radius: $radius-round;
+  border: 4rpx solid rgba(255, 255, 255, 0.3);
+}
+
+.quotaCard {
+  background: rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(20px);
+  border-radius: $radius-lg;
+  padding: $spacing-lg;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.quotaInfo {
+  flex: 1;
+}
+
+.quotaLabel {
+  font-size: $font-size-sm;
+  color: rgba(255, 255, 255, 0.8);
+  margin-bottom: 4rpx;
+}
+
+.quotaValue {
+  font-size: $font-size-xxl;
+  font-weight: $font-weight-bold;
+  color: $color-text-white;
+
+  .unit {
+    font-size: $font-size-md;
+    font-weight: $font-weight-normal;
+    margin-left: 4rpx;
+  }
+}
+
+.quotaActions {
+  display: flex;
+  gap: $spacing-sm;
+}
+
+.quotaBtn {
+  @include button-reset;
+  height: $button-height-sm;
+  padding: 0 $spacing-lg;
+  background: rgba(255, 255, 255, 0.25);
+  color: $color-text-white;
+  border-radius: $radius-button;
+  font-size: $font-size-sm;
+  transition: all $transition-fast;
+
+  &:active {
+    background: rgba(255, 255, 255, 0.35);
+    transform: scale(0.96);
+  }
+
+  &.primary {
+    background: $color-text-white;
+    color: $color-primary;
+    font-weight: $font-weight-semibold;
+  }
+}
+
+.statsRow {
+  display: flex;
+  gap: $spacing-md;
+  margin-top: -40rpx;
+  padding: 0 $page-padding;
+  margin-bottom: $spacing-lg;
+  position: relative;
+  z-index: 2;
+}
+
+.section {
+  padding: 0 $page-padding;
+  margin-bottom: $spacing-lg;
+}
+
+.sectionHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: $spacing-md;
+}
+
+.sectionTitle {
+  font-size: $font-size-lg;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+}
+
+.sectionAction {
+  font-size: $font-size-sm;
+  color: $color-primary;
+}
+
+.filterTabs {
+  display: flex;
+  gap: $spacing-sm;
+  margin-bottom: $spacing-md;
+  overflow-x: auto;
+  padding-bottom: $spacing-sm;
+  @include scroll-x-container;
+}
+
+.filterTab {
+  @include scroll-x-item(auto);
+  padding: $spacing-sm $spacing-lg;
+  background: $color-bg-card;
+  border-radius: $radius-button;
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+  white-space: nowrap;
+  transition: all $transition-fast;
+  display: inline-flex;
+
+  &.active {
+    background: $color-primary;
+    color: $color-text-white;
+  }
+}
+
+.roomList {
+  padding-bottom: 40rpx;
+}
+
+.emptyState {
+  text-align: center;
+  padding: $spacing-xl * 2;
+}
+
+.emptyText {
+  font-size: $font-size-md;
+  color: $color-text-tertiary;
+}

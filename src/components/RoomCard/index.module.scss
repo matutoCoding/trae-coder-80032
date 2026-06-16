@@ -1,0 +1,145 @@
+@use '@/styles/variables.scss' as *;
+
+.roomCard {
+  background: $color-bg-card;
+  border-radius: $radius-lg;
+  overflow: hidden;
+  box-shadow: $shadow-card;
+  margin-bottom: $spacing-md;
+  transition: all $transition-base;
+
+  &:active {
+    transform: scale(0.98);
+  }
+}
+
+.cardImage {
+  position: relative;
+  width: 100%;
+  height: 280rpx;
+
+  .image {
+    width: 100%;
+    height: 100%;
+  }
+
+  .statusBadge {
+    position: absolute;
+    top: $spacing-md;
+    right: $spacing-md;
+    padding: 8rpx 20rpx;
+    border-radius: $radius-round;
+    font-size: $font-size-xs;
+    font-weight: $font-weight-medium;
+    color: $color-text-white;
+  }
+
+  .statusAvailable {
+    background: $color-room-available;
+  }
+
+  .statusOccupied {
+    background: $color-room-occupied;
+  }
+
+  .statusFull {
+    background: $color-room-full;
+  }
+
+  .statusPending {
+    background: $color-room-pending;
+  }
+}
+
+.cardContent {
+  padding: $spacing-lg;
+}
+
+.cardHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: $spacing-sm;
+}
+
+.roomName {
+  font-size: $font-size-lg;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+  @include text-ellipsis;
+  flex: 1;
+}
+
+.roomNumber {
+  font-size: $font-size-sm;
+  color: $color-text-tertiary;
+  margin-left: $spacing-sm;
+  flex-shrink: 0;
+}
+
+.roomLocation {
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+  margin-bottom: $spacing-md;
+}
+
+.roomFeatures {
+  display: flex;
+  flex-wrap: wrap;
+  gap: $spacing-sm;
+  margin-bottom: $spacing-lg;
+}
+
+.featureTag {
+  padding: 6rpx 16rpx;
+  background: $color-bg-tag;
+  border-radius: $radius-xs;
+  font-size: $font-size-xs;
+  color: $color-primary;
+}
+
+.cardFooter {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: $spacing-md;
+  border-top: 1rpx solid $color-divider;
+}
+
+.priceInfo {
+  display: flex;
+  align-items: baseline;
+}
+
+.price {
+  font-size: $font-size-xl;
+  font-weight: $font-weight-bold;
+  color: $color-secondary;
+}
+
+.priceUnit {
+  font-size: $font-size-sm;
+  color: $color-text-tertiary;
+  margin-left: 4rpx;
+}
+
+.actionButton {
+  @include button-reset;
+  height: $button-height-sm;
+  padding: 0 $spacing-lg;
+  background: $color-primary;
+  color: $color-text-white;
+  border-radius: $radius-button;
+  font-size: $font-size-sm;
+  font-weight: $font-weight-medium;
+  transition: all $transition-fast;
+
+  &:active {
+    opacity: 0.9;
+    transform: scale(0.96);
+  }
+
+  &.disabled {
+    background: $color-text-disabled;
+  }
+}

@@ -1,0 +1,144 @@
+@use '@/styles/variables.scss' as *;
+
+.queueItem {
+  background: $color-bg-card;
+  border-radius: $radius-lg;
+  padding: $spacing-lg;
+  margin-bottom: $spacing-md;
+  box-shadow: $shadow-card;
+  position: relative;
+  overflow: hidden;
+}
+
+.notifiedBadge {
+  position: absolute;
+  top: 0;
+  right: 0;
+  background: $color-secondary;
+  color: $color-text-white;
+  font-size: $font-size-xs;
+  padding: 6rpx 20rpx;
+  border-bottom-left-radius: $radius-md;
+}
+
+.itemHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: $spacing-md;
+}
+
+.roomInfo {
+  flex: 1;
+}
+
+.roomName {
+  font-size: $font-size-lg;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+  margin-bottom: 4rpx;
+}
+
+.timeInfo {
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+}
+
+.positionBadge {
+  padding: 8rpx 20rpx;
+  background: $color-bg-tag;
+  border-radius: $radius-round;
+  margin-left: $spacing-sm;
+
+  .positionText {
+    font-size: $font-size-sm;
+    font-weight: $font-weight-semibold;
+    color: $color-primary;
+  }
+}
+
+.statusRow {
+  display: flex;
+  align-items: center;
+  padding: $spacing-sm 0;
+  border-top: 1rpx solid $color-divider;
+  border-bottom: 1rpx solid $color-divider;
+  margin-bottom: $spacing-md;
+}
+
+.statusTag {
+  padding: 4rpx 16rpx;
+  border-radius: $radius-xs;
+  font-size: $font-size-xs;
+  font-weight: $font-weight-medium;
+
+  &.waiting {
+    background: rgba($color-warning, 0.1);
+    color: $color-warning;
+  }
+
+  &.notified {
+    background: rgba($color-secondary, 0.1);
+    color: $color-secondary;
+  }
+
+  &.confirmed {
+    background: rgba($color-success, 0.1);
+    color: $color-success;
+  }
+
+  &.cancelled {
+    background: rgba($color-text-tertiary, 0.1);
+    color: $color-text-tertiary;
+  }
+
+  &.expired {
+    background: rgba($color-error, 0.1);
+    color: $color-error;
+  }
+}
+
+.expireInfo {
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+  margin-left: $spacing-sm;
+}
+
+.actionRow {
+  display: flex;
+  gap: $spacing-sm;
+}
+
+.actionBtn {
+  @include button-reset;
+  flex: 1;
+  height: $button-height-md;
+  border-radius: $radius-button;
+  font-size: $font-size-sm;
+  font-weight: $font-weight-medium;
+  transition: all $transition-fast;
+
+  &:active {
+    transform: scale(0.96);
+  }
+
+  &.primary {
+    background: $color-primary;
+    color: $color-text-white;
+  }
+
+  &.secondary {
+    background: $color-bg-page;
+    color: $color-text-secondary;
+  }
+
+  &.danger {
+    background: rgba($color-error, 0.1);
+    color: $color-error;
+  }
+
+  &.success {
+    background: $color-success;
+    color: $color-text-white;
+  }
+}

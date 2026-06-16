@@ -1,0 +1,153 @@
+@use '@/styles/variables.scss' as *;
+
+.pickerContainer {
+  background: $color-bg-card;
+  border-radius: $radius-lg;
+  padding: $spacing-lg;
+}
+
+.dateSelector {
+  display: flex;
+  gap: $spacing-sm;
+  margin-bottom: $spacing-lg;
+  overflow-x: auto;
+  padding-bottom: $spacing-sm;
+  @include scroll-x-container;
+}
+
+.dateItem {
+  @include scroll-x-item(120rpx);
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: $spacing-md $spacing-sm;
+  background: $color-bg-page;
+  border-radius: $radius-md;
+  border: 2rpx solid transparent;
+  transition: all $transition-fast;
+
+  &.active {
+    background: $color-bg-tag;
+    border-color: $color-primary;
+  }
+
+  .weekday {
+    font-size: $font-size-sm;
+    color: $color-text-secondary;
+    margin-bottom: 4rpx;
+  }
+
+  .day {
+    font-size: $font-size-xl;
+    font-weight: $font-weight-semibold;
+    color: $color-text-primary;
+  }
+
+  &.active .weekday,
+  &.active .day {
+    color: $color-primary;
+  }
+}
+
+.slotsTitle {
+  font-size: $font-size-md;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+  margin-bottom: $spacing-md;
+}
+
+.slotsGrid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: $spacing-sm;
+}
+
+.slotItem {
+  width: calc((100% - 48rpx) / 4);
+  padding: $spacing-md $spacing-sm;
+  background: $color-bg-page;
+  border-radius: $radius-sm;
+  text-align: center;
+  border: 2rpx solid transparent;
+  transition: all $transition-fast;
+
+  .timeText {
+    font-size: $font-size-sm;
+    font-weight: $font-weight-medium;
+    color: $color-text-primary;
+  }
+
+  &.available {
+    background: rgba($color-room-available, 0.1);
+    .timeText {
+      color: $color-room-available;
+    }
+    &:active {
+      transform: scale(0.95);
+    }
+  }
+
+  &.booked {
+    background: rgba($color-room-full, 0.1);
+    .timeText {
+      color: $color-text-tertiary;
+    }
+  }
+
+  &.occupied {
+    background: rgba($color-room-occupied, 0.1);
+    .timeText {
+      color: $color-room-occupied;
+    }
+  }
+
+  &.selected {
+    background: $color-primary;
+    border-color: $color-primary;
+    .timeText {
+      color: $color-text-white;
+    }
+  }
+
+  &.disabled {
+    opacity: 0.5;
+  }
+}
+
+.legend {
+  display: flex;
+  gap: $spacing-lg;
+  margin-top: $spacing-lg;
+  padding-top: $spacing-md;
+  border-top: 1rpx solid $color-divider;
+}
+
+.legendItem {
+  display: flex;
+  align-items: center;
+  gap: $spacing-xs;
+
+  .dot {
+    width: 16rpx;
+    height: 16rpx;
+    border-radius: $radius-round;
+  }
+
+  .dotAvailable {
+    background: $color-room-available;
+  }
+
+  .dotBooked {
+    background: $color-text-tertiary;
+  }
+
+  .dotOccupied {
+    background: $color-room-occupied;
+  }
+
+  .text {
+    font-size: $font-size-xs;
+    color: $color-text-secondary;
+  }
+}

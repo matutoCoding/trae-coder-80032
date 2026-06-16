@@ -1,0 +1,123 @@
+@use '@/styles/variables.scss' as *;
+
+.page {
+  min-height: 100vh;
+  padding-bottom: $spacing-xl;
+}
+
+.statsRow {
+  display: flex;
+  gap: $spacing-md;
+  padding: $spacing-md $page-padding;
+  margin-top: $spacing-md;
+}
+
+.recordItem {
+  display: flex;
+  background: $color-bg-card;
+  margin: 0 $page-padding $spacing-md;
+  border-radius: $radius-lg;
+  overflow: hidden;
+  box-shadow: $shadow-card;
+}
+
+.recordIcon {
+  width: 100rpx;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 48rpx;
+  background: linear-gradient(135deg, $color-primary 0%, $color-primary-light 100%);
+
+  &.completed { background: linear-gradient(135deg, $color-success 0%, #34d399 100%); }
+  &.expired { background: linear-gradient(135deg, $color-danger 0%, #f87171 100%); }
+  &.cancelled { background: linear-gradient(135deg, $color-text-disabled 0%, #9ca3af 100%); }
+  &.confirmed { background: linear-gradient(135deg, $color-warning 0%, #fbbf24 100%); }
+  &.checkin { background: linear-gradient(135deg, $color-room-available 0%, #2dd4bf 100%); }
+}
+
+.recordContent {
+  flex: 1;
+  padding: $spacing-md $spacing-lg;
+  min-width: 0;
+}
+
+.recordHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: $spacing-xs;
+}
+
+.recordRoom {
+  font-size: $font-size-md;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+}
+
+.recordStatus {
+  font-size: $font-size-xs;
+  padding: 4rpx 16rpx;
+  border-radius: $radius-round;
+  font-weight: $font-weight-medium;
+
+  &.completed { background: rgba($color-success, 0.1); color: $color-success; }
+  &.expired { background: rgba($color-danger, 0.1); color: $color-danger; }
+  &.cancelled { background: rgba($color-text-disabled, 0.2); color: $color-text-tertiary; }
+  &.confirmed { background: rgba($color-warning, 0.1); color: $color-warning; }
+  &.checkin { background: rgba($color-room-available, 0.1); color: $color-room-available; }
+}
+
+.recordTime {
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+  margin-bottom: $spacing-xs;
+}
+
+.recordMeta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.recordUser {
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+}
+
+.recordQuota {
+  font-size: $font-size-sm;
+  font-weight: $font-weight-semibold;
+  color: $color-secondary;
+}
+
+.emptyState {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 120rpx 0;
+}
+
+.emptyIcon {
+  font-size: 120rpx;
+  opacity: 0.3;
+  margin-bottom: $spacing-md;
+}
+
+.emptyText {
+  font-size: $font-size-md;
+  color: $color-text-tertiary;
+  margin-bottom: $spacing-lg;
+}
+
+.emptyBtn {
+  @include button-reset;
+  height: $button-height-md;
+  padding: 0 $spacing-xl;
+  background: $color-primary;
+  color: $color-text-white;
+  border-radius: $radius-button;
+  font-size: $font-size-sm;
+}

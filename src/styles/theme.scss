@@ -1,0 +1,43 @@
+// ============================================
+// 共享琴房 - 主题配色变量
+// ============================================
+
+// 品牌主题色
+$color-primary: #2D5BFF;
+$color-primary-light: #5B8DEF;
+$color-primary-dark: #1E44CC;
+$color-primary-gradient: linear-gradient(135deg, #2D5BFF 0%, #5B8DEF 100%);
+
+// 辅助色
+$color-secondary: #FF6B35;
+$color-secondary-light: #FF9066;
+
+// 功能色
+$color-success: #10B981;
+$color-warning: #F59E0B;
+$color-error: #EF4444;
+$color-info: #2D5BFF;
+
+// 琴房状态色
+$color-room-available: #10B981;
+$color-room-occupied: #2D5BFF;
+$color-room-full: #EF4444;
+$color-room-pending: #F59E0B;
+$color-room-waitlist: #FF6B35;
+
+// 背景色
+$color-bg-page: #F5F7FA;
+$color-bg-card: #FFFFFF;
+$color-bg-hover: #F0F4FF;
+$color-bg-tag: #EEF2FF;
+
+// 文本色
+$color-text-primary: #1A1A2E;
+$color-text-secondary: #6B7280;
+$color-text-tertiary: #9CA3AF;
+$color-text-disabled: #C9CDD4;
+$color-text-white: #FFFFFF;
+
+// 边框色
+$color-border: #E5E7EB;
+$color-divider: #F0F2F5;
