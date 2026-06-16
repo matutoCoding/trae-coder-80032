@@ -31,7 +31,7 @@ const MinePage: React.FC = () => {
 
   const myUpcomingBookings = useMemo(() => {
     return bookings
-      .filter((b) => b.userId === currentUser.id && ['confirmed', 'pending', 'checkedIn'].includes(b.status))
+      .filter((b) => b.userId === currentUser.id && ['confirmed', 'pending', 'checkin'].includes(b.status))
       .sort((a, b) => (a.date + a.startTime).localeCompare(b.date + b.startTime))
       .slice(0, 3);
   }, [bookings, currentUser.id]);
@@ -133,9 +133,9 @@ const MinePage: React.FC = () => {
                     </Button>
                   </>
                 )}
-                {booking.status === 'checkedIn' && (
-                  <Button className={classnames(styles.bookingBtn, styles.secondary)} disabled>
-                    练习中
+                {booking.status === 'checkin' && (
+                  <Button className={classnames(styles.bookingBtn, styles.checkin)} disabled>
+                    练琴中
                   </Button>
                 )}
               </View>

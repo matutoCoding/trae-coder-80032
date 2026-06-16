@@ -10,7 +10,7 @@ import { useQuotaStore } from '@/store/useQuotaStore';
 import { useRoomStore } from '@/store/useRoomStore';
 import { getRoleText } from '@/utils/format';
 import { formatDuration } from '@/utils/time';
-import { Room } from '@/types';
+import { Room, FamilyMember } from '@/types';
 
 const BookingConfirmPage: React.FC = () => {
   const router = useRouter();
@@ -27,26 +27,51 @@ const BookingConfirmPage: React.FC = () => {
   const [showSuccess, setShowSuccess] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(false);
 
-  const currentUser = useUserStore((s) => s.currentUser);
-  const familyMembers = useUserStore((s) => s.familyMembers);
+  const currentUserId = useUserStore((s) => s.currentUser.id);
+  const allMembers = useUserStore((s) => s.allMembers);
   const quotaPool = useQuotaStore((s) => s.quotaPool);
-  const [selectedUserId, setSelectedUserId] = useState<string>(currentUser.id);
-
   const updateTimeSlotStatus = useRoomStore((s) => s.updateTimeSlotStatus);
+
+  const [selectedUserId, setSelectedUserId] = useState<string>(currentUserId);
 
   useEffect(() => {
     const found = getRoomById(roomId as string);
     setRoom(found);
   }, [roomId]);
 
-  const selectedUser = familyMembers.find((m) => m.id === selectedUserId) || currentUser;
+  const selectedUser: FamilyMember =
+    allMembers.find((m) => m.id === selectedUserId) || allMembers[0];
 
   const durationNum = parseInt(duration as string, 10);
   const quotaNum = parseInt(quota as string, 10);
   const hasEnoughQuota = quotaPool.availableQuota >= quotaNum;
 
+  const handleSelectUser = () => {
+    const options = allMembers.map((m) => `${m.name}（${getRoleText(m.role)}）`);
+    const currentIndex = allMembers.findIndex((m) => m.id === selectedUserId);
+
+    Taro.showActionSheet({
+      itemList: options,
+      success: (res) => {
+        const member = allMembers[res.tapIndex];
+        if (member) {
+          setSelectedUserId(member.id);
+        }
+      },
+      fail: (err) => {
+        if (err && err.errMsg && !err.errMsg.includes('cancel')) {
+          console.warn('actionSheet fail:', err);
+        }
+      }
+    });
+  };
+
   const handleConfirm = async () => {
     if (!room || loading) return;
+    if (!selectedUser) {
+      Taro.showToast({ title: '请选择使用人', icon: 'none' });
+      return;
+    }
     if (!hasEnoughQuota) {
       Taro.showToast({ title: '额度不足，请先充值', icon: 'none' });
       return;
@@ -131,14 +156,14 @@ const BookingConfirmPage: React.FC = () => {
       <View className={styles.section}>
         <Text className={styles.sectionTitle}>使用人</Text>
         <View className={styles.userRow}>
-          <Image className={styles.userAvatar} src={selectedUser.avatar} mode='aspectFill' />
+          <Image className={styles.userAvatar} src={selectedUser?.avatar} mode='aspectFill' />
           <View className={styles.userInfo}>
-            <Text className={styles.userName}>{selectedUser.name}</Text>
+            <Text className={styles.userName}>{selectedUser?.name}</Text>
             <Text className={styles.userRole}>
-              {getRoleText(selectedUser.role)} · {selectedUser.relation}
+              {getRoleText(selectedUser?.role)} · {selectedUser?.relation}
             </Text>
           </View>
-          <Button className={styles.changeBtn} disabled>
+          <Button className={styles.changeBtn} onClick={handleSelectUser}>
             更换
           </Button>
         </View>

@@ -27,7 +27,7 @@ export const removeFromWaitlist = (id: string): void => {
   useQueueStore.getState().removeFromWaitlist(id);
 };
 
-export const confirmWaitlist = async (id: string): Promise<boolean> => {
+export const confirmWaitlist = async (id: string): Promise<{ success: boolean; message: string }> => {
   return useQueueStore.getState().confirmWaitlist(id);
 };
 

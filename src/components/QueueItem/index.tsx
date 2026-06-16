@@ -14,10 +14,15 @@ interface QueueItemProps {
 
 const QueueItem: React.FC<QueueItemProps> = ({ item, onUpdate }) => {
   const handleConfirm = async () => {
-    const success = await confirmWaitlist(item.id);
-    if (success) {
-      Taro.showToast({ title: '已确认补位', icon: 'success' });
+    const result = await confirmWaitlist(item.id);
+    if (result.success) {
+      Taro.showToast({ title: result.message, icon: 'success' });
       onUpdate?.();
+      setTimeout(() => {
+        Taro.switchTab({ url: '/pages/mine/index' });
+      }, 1200);
+    } else {
+      Taro.showToast({ title: result.message, icon: 'error' });
     }
   };
 

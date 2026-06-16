@@ -31,9 +31,10 @@
   background: linear-gradient(135deg, $color-primary 0%, $color-primary-light 100%);
 
   &.completed { background: linear-gradient(135deg, $color-success 0%, #34d399 100%); }
-  &.expired { background: linear-gradient(135deg, $color-danger 0%, #f87171 100%); }
+  &.expired { background: linear-gradient(135deg, $color-error 0%, #f87171 100%); }
   &.cancelled { background: linear-gradient(135deg, $color-text-disabled 0%, #9ca3af 100%); }
   &.confirmed { background: linear-gradient(135deg, $color-warning 0%, #fbbf24 100%); }
+  &.pending { background: linear-gradient(135deg, $color-room-pending 0%, #fcd34d 100%); }
   &.checkin { background: linear-gradient(135deg, $color-room-available 0%, #2dd4bf 100%); }
 }
 
@@ -63,9 +64,10 @@
   font-weight: $font-weight-medium;
 
   &.completed { background: rgba($color-success, 0.1); color: $color-success; }
-  &.expired { background: rgba($color-danger, 0.1); color: $color-danger; }
+  &.expired { background: rgba($color-error, 0.1); color: $color-error; }
   &.cancelled { background: rgba($color-text-disabled, 0.2); color: $color-text-tertiary; }
   &.confirmed { background: rgba($color-warning, 0.1); color: $color-warning; }
+  &.pending { background: rgba($color-room-pending, 0.1); color: $color-room-pending; }
   &.checkin { background: rgba($color-room-available, 0.1); color: $color-room-available; }
 }
 
