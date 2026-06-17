@@ -358,3 +358,137 @@
     transform: scale(0.96);
   }
 }
+
+.memberTabs {
+  display: flex;
+  gap: $spacing-sm;
+  padding: 0 $page-padding $spacing-md;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+.memberTab {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: $spacing-xs;
+  padding: $spacing-sm $spacing-md;
+  background: $color-bg-card;
+  border-radius: $radius-round;
+  border: 2rpx solid transparent;
+  transition: all $transition-fast;
+
+  &:active {
+    transform: scale(0.96);
+  }
+
+  &.active {
+    background: rgba($color-primary, 0.08);
+    border-color: $color-primary;
+  }
+}
+
+.tabAvatar {
+  width: 44rpx;
+  height: 44rpx;
+  border-radius: $radius-round;
+}
+
+.tabName {
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+  white-space: nowrap;
+
+  .active & {
+    color: $color-primary;
+    font-weight: $font-weight-semibold;
+  }
+}
+
+.tabHours {
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+  white-space: nowrap;
+
+  .active & {
+    color: $color-primary;
+  }
+}
+
+.monthStats {
+  background: $color-bg-card;
+  border-radius: $radius-lg;
+  padding: $spacing-md $spacing-lg;
+  box-shadow: $shadow-card;
+  margin: 0 $page-padding $spacing-md;
+}
+
+.monthStatsTitle {
+  font-size: $font-size-sm;
+  color: $color-text-tertiary;
+  margin-bottom: $spacing-sm;
+}
+
+.monthStatsRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: $spacing-xs 0;
+
+  &:not(:last-child) {
+    border-bottom: 1rpx solid $color-divider;
+  }
+}
+
+.memberCol {
+  display: flex;
+  align-items: center;
+  gap: $spacing-sm;
+}
+
+.monthAvatar {
+  width: 56rpx;
+  height: 56rpx;
+  border-radius: $radius-round;
+}
+
+.memberName {
+  font-size: $font-size-md;
+  color: $color-text-primary;
+  font-weight: $font-weight-medium;
+}
+
+.monthHours {
+  font-size: $font-size-md;
+  color: $color-primary;
+  font-weight: $font-weight-semibold;
+}
+
+.filterNotice {
+  padding: $spacing-sm $page-padding;
+  font-size: $font-size-xs;
+  color: $color-primary;
+  margin-top: -$spacing-sm;
+  margin-bottom: $spacing-sm;
+}
+
+.txUserLabel {
+  display: inline-block;
+  font-size: 20rpx;
+  padding: 2rpx 12rpx;
+  background: $color-bg-tag;
+  color: $color-primary;
+  border-radius: $radius-round;
+  margin-left: $spacing-xs;
+}
+
+.emptyTx {
+  padding: 80rpx 0;
+  text-align: center;
+  color: $color-text-tertiary;
+  font-size: $font-size-sm;
+}

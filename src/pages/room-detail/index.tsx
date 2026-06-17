@@ -147,7 +147,13 @@ const RoomDetailPage: React.FC = () => {
 
       <View className={styles.section}>
         <Text className={styles.sectionTitle}>选择时间</Text>
-        <TimeSlotPicker roomId={roomId} multiSelect onSelect={handleSlotsSelect} />
+        <TimeSlotPicker
+          roomId={roomId}
+          value={selectedDate}
+          onDateChange={setSelectedDate}
+          multiSelect
+          onSelect={handleSlotsSelect}
+        />
       </View>
 
       <View className={styles.bottomBar}>

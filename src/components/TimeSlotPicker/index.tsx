@@ -9,13 +9,26 @@ import { useRoomStore } from '@/store/useRoomStore';
 interface TimeSlotPickerProps {
   roomId: string;
   onSelect?: (slots: TimeSlot[]) => void;
+  onDateChange?: (date: string) => void;
+  value?: string;
+  defaultValue?: string;
   multiSelect?: boolean;
 }
 
-const TimeSlotPicker: React.FC<TimeSlotPickerProps> = ({ roomId, onSelect, multiSelect = false }) => {
-  const [selectedDate, setSelectedDate] = useState<string>(formatDate());
+const TimeSlotPicker: React.FC<TimeSlotPickerProps> = ({
+  roomId,
+  onSelect,
+  onDateChange,
+  value,
+  defaultValue,
+  multiSelect = false
+}) => {
+  const isControlled = value !== undefined;
+  const [innerDate, setInnerDate] = useState<string>(defaultValue || formatDate());
   const [selectedSlots, setSelectedSlots] = useState<string[]>([]);
   const dateList = getDateList(7);
+
+  const selectedDate = isControlled ? value! : innerDate;
 
   const getTimeSlots = useRoomStore((state) => state.getTimeSlots);
   const timeSlotsMap = useRoomStore((state) => state.timeSlots);
@@ -53,7 +66,10 @@ const TimeSlotPicker: React.FC<TimeSlotPickerProps> = ({ roomId, onSelect, multi
   };
 
   const handleDateChange = (date: string) => {
-    setSelectedDate(date);
+    if (!isControlled) {
+      setInnerDate(date);
+    }
+    onDateChange?.(date);
   };
 
   return (

@@ -9,10 +9,24 @@ interface QuotaStore {
   transactions: QuotaTransaction[];
   loading: boolean;
   error: string | null;
-  deductQuota: (amount: number, description: string, userId: string, userName: string) => Promise<boolean>;
+  deductQuota: (
+    amount: number,
+    description: string,
+    userId: string,
+    userName: string,
+    opts?: { bookingId?: string; waitlistId?: string }
+  ) => Promise<boolean>;
   rechargeQuota: (amount: number, operator: string) => Promise<boolean>;
-  refundQuota: (amount: number, description: string, userId: string, userName: string) => Promise<boolean>;
+  refundQuota: (
+    amount: number,
+    description: string,
+    userId: string,
+    userName: string,
+    opts?: { bookingId?: string }
+  ) => Promise<boolean>;
   refreshQuota: () => void;
+  hasRefunded: (bookingId: string) => boolean;
+  hasDeducted: (key: { bookingId?: string; waitlistId?: string }) => boolean;
 }
 
 export const useQuotaStore = create<QuotaStore>((set, get) => ({
@@ -21,12 +35,31 @@ export const useQuotaStore = create<QuotaStore>((set, get) => ({
   loading: false,
   error: null,
 
-  deductQuota: async (amount, description, userId, userName) => {
+  hasRefunded: (bookingId) => {
+    return get().transactions.some((t) => t.type === 'refund' && t.bookingId === bookingId);
+  },
+
+  hasDeducted: ({ bookingId, waitlistId }) => {
+    return get().transactions.some((t) => {
+      if (t.type !== 'consume') return false;
+      if (bookingId && t.bookingId === bookingId) return true;
+      if (waitlistId && t.waitlistId === waitlistId) return true;
+      return false;
+    });
+  },
+
+  deductQuota: async (amount, description, userId, userName, opts = {}) => {
     const lockKey = `quota-${get().quotaPool.familyId}`;
 
     try {
       return await withLock(lockKey, async () => {
         set({ loading: true, error: null });
+
+        if (get().hasDeducted(opts)) {
+          console.warn('[Quota] Deduct skipped: already deducted for key', opts);
+          set({ loading: false });
+          return true;
+        }
 
         const currentPool = get().quotaPool;
         const expectedVersion = getCurrentVersion(lockKey);
@@ -48,7 +81,7 @@ export const useQuotaStore = create<QuotaStore>((set, get) => ({
         const newAvailable = currentPool.totalQuota - newUsed;
 
         const transaction: QuotaTransaction = {
-          id: `tx-${Date.now()}`,
+          id: `tx-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
           type: 'consume',
           amount: -amount,
           balanceAfter: newAvailable,
@@ -56,6 +89,8 @@ export const useQuotaStore = create<QuotaStore>((set, get) => ({
           operator: userName,
           userId,
           userName,
+          bookingId: opts.bookingId,
+          waitlistId: opts.waitlistId,
           createdAt: formatDateTime()
         };
 
@@ -71,7 +106,7 @@ export const useQuotaStore = create<QuotaStore>((set, get) => ({
           loading: false
         });
 
-        console.log('[Quota] Deducted successfully:', { amount, newAvailable });
+        console.log('[Quota] Deducted successfully:', { amount, newAvailable, opts });
         return true;
       });
     } catch (error) {
@@ -94,7 +129,7 @@ export const useQuotaStore = create<QuotaStore>((set, get) => ({
         const newAvailable = newTotal - currentPool.usedQuota;
 
         const transaction: QuotaTransaction = {
-          id: `tx-${Date.now()}`,
+          id: `tx-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
           type: 'recharge',
           amount,
           balanceAfter: newAvailable,
@@ -125,19 +160,25 @@ export const useQuotaStore = create<QuotaStore>((set, get) => ({
     }
   },
 
-  refundQuota: async (amount, description, userId, userName) => {
+  refundQuota: async (amount, description, userId, userName, opts = {}) => {
     const lockKey = `quota-${get().quotaPool.familyId}`;
 
     try {
       return await withLock(lockKey, async () => {
         set({ loading: true, error: null });
 
+        if (opts.bookingId && get().hasRefunded(opts.bookingId)) {
+          console.warn('[Quota] Refund skipped: already refunded for booking', opts.bookingId);
+          set({ loading: false });
+          return true;
+        }
+
         const currentPool = get().quotaPool;
         const newUsed = Math.max(0, currentPool.usedQuota - amount);
         const newAvailable = currentPool.totalQuota - newUsed;
 
         const transaction: QuotaTransaction = {
-          id: `tx-${Date.now()}`,
+          id: `tx-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
           type: 'refund',
           amount,
           balanceAfter: newAvailable,
@@ -145,6 +186,7 @@ export const useQuotaStore = create<QuotaStore>((set, get) => ({
           operator: '系统',
           userId,
           userName,
+          bookingId: opts.bookingId,
           createdAt: formatDateTime()
         };
 
@@ -159,7 +201,7 @@ export const useQuotaStore = create<QuotaStore>((set, get) => ({
           loading: false
         });
 
-        console.log('[Quota] Refunded successfully:', { amount, newAvailable });
+        console.log('[Quota] Refunded successfully:', { amount, newAvailable, opts });
         return true;
       });
     } catch (error) {

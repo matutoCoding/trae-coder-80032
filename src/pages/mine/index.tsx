@@ -117,19 +117,27 @@ const MinePage: React.FC = () => {
                 时长 {booking.duration} 分钟 · 消耗 {booking.quotaUsed} 额度
               </Text>
               <View className={styles.bookingActions}>
-                {booking.status === 'confirmed' && (
+                {(booking.status === 'confirmed' || booking.status === 'pending') && (
                   <>
                     <Button
                       className={classnames(styles.bookingBtn, styles.primary)}
-                      onClick={() => handleCheckIn(booking)}
+                      onClick={() => Taro.navigateTo({ url: `/pages/booking-reschedule/index?id=${booking.id}` })}
                     >
-                      签到
+                      改期
                     </Button>
+                    {booking.status === 'confirmed' && (
+                      <Button
+                        className={classnames(styles.bookingBtn, styles.checkin)}
+                        onClick={() => handleCheckIn(booking)}
+                      >
+                        签到
+                      </Button>
+                    )}
                     <Button
                       className={classnames(styles.bookingBtn, styles.secondary)}
                       onClick={() => handleCancel(booking)}
                     >
-                      取消预约
+                      取消
                     </Button>
                   </>
                 )}

@@ -16,6 +16,10 @@ interface QueueStore {
   addBooking: (booking: Omit<Booking, 'id' | 'createdAt' | 'status'>) => void;
   cancelBooking: (id: string) => Promise<{ success: boolean; message: string }>;
   checkInBooking: (id: string) => void;
+  rescheduleBooking: (
+    id: string,
+    target: { date: string; startTime: string; endTime: string; duration: number }
+  ) => Promise<{ success: boolean; message: string; diffQuota?: number }>;
   processAutoRelease: () => void;
   notifyNextWaitlist: (roomId: string, date: string, startTime: string) => void;
   _setTimeSlotOccupied: (roomId: string, date: string, startTime: string, endTime: string, status: 'booked' | 'available') => void;
@@ -85,7 +89,8 @@ export const useQueueStore = create<QueueStore>((set, get) => ({
       quotaAmount,
       `候补补位${item.roomName}`,
       item.userId,
-      item.userName
+      item.userName,
+      { waitlistId: item.id }
     );
     if (!deductResult) {
       return { success: false, message: '额度不足或扣减失败' };
@@ -131,11 +136,13 @@ export const useQueueStore = create<QueueStore>((set, get) => ({
 
   createBooking: async (data) => {
     try {
+      const tempBookingId = `bk-${Date.now()}`;
       const quotaSuccess = await useQuotaStore.getState().deductQuota(
         data.quotaUsed,
         `预约${data.roomName}`,
         data.userId,
-        data.userName
+        data.userName,
+        { bookingId: tempBookingId }
       );
       if (!quotaSuccess) {
         return { success: false, message: '额度不足或扣减失败' };
@@ -143,7 +150,7 @@ export const useQueueStore = create<QueueStore>((set, get) => ({
 
       const newBooking: Booking = {
         ...data,
-        id: `bk-${Date.now()}`,
+        id: tempBookingId,
         status: 'confirmed',
         createdAt: formatDateTime()
       };
@@ -190,7 +197,8 @@ export const useQueueStore = create<QueueStore>((set, get) => ({
       booking.quotaUsed,
       `取消预约${booking.roomName}`,
       booking.userId,
-      booking.userName
+      booking.userName,
+      { bookingId: booking.id }
     );
     if (!refundResult) {
       console.warn('[Queue] Refund failed during cancel, proceeding anyway');
@@ -216,6 +224,63 @@ export const useQueueStore = create<QueueStore>((set, get) => ({
       )
     }));
     console.log('[Queue] Checked in (status=checkin / 练琴中):', id);
+  },
+
+  rescheduleBooking: async (id, target) => {
+    const booking = get().bookings.find((b) => b.id === id);
+    if (!booking) return { success: false, message: '预约不存在' };
+
+    if (!['pending', 'confirmed'].includes(booking.status)) {
+      return { success: false, message: '当前状态不可改期' };
+    }
+
+    const newQuota = Math.max(1, Math.ceil(target.duration / 60));
+    const diffQuota = newQuota - booking.quotaUsed;
+
+    if (diffQuota > 0) {
+      const deductResult = await useQuotaStore.getState().deductQuota(
+        diffQuota,
+        `改期补差额${booking.roomName}`,
+        booking.userId,
+        booking.userName,
+        { bookingId: `${booking.id}-resch-diff` }
+      );
+      if (!deductResult) {
+        return { success: false, message: '额度不足，改期失败' };
+      }
+    } else if (diffQuota < 0) {
+      const refundResult = await useQuotaStore.getState().refundQuota(
+        -diffQuota,
+        `改期退回差额${booking.roomName}`,
+        booking.userId,
+        booking.userName,
+        { bookingId: `${booking.id}-resch-diff` }
+      );
+      if (!refundResult) {
+        console.warn('[Queue] Reschedule refund difference failed, proceeding anyway');
+      }
+    }
+
+    get()._setTimeSlotOccupied(booking.roomId, booking.date, booking.startTime, booking.endTime, 'available');
+    get()._setTimeSlotOccupied(booking.roomId, target.date, target.startTime, target.endTime, 'booked');
+
+    set((state) => ({
+      bookings: state.bookings.map((b) =>
+        b.id === id
+          ? {
+              ...b,
+              date: target.date,
+              startTime: target.startTime,
+              endTime: target.endTime,
+              duration: target.duration,
+              quotaUsed: newQuota
+            }
+          : b
+      )
+    }));
+
+    console.log('[Queue] Booking rescheduled:', id, 'diffQuota=', diffQuota);
+    return { success: true, message: `改期成功，${diffQuota > 0 ? `补扣${diffQuota}额度` : diffQuota < 0 ? `退回${-diffQuota}额度` : '额度不变'}`, diffQuota };
   },
 
   processAutoRelease: () => {
@@ -255,17 +320,11 @@ export const useQueueStore = create<QueueStore>((set, get) => ({
             booking.quotaUsed,
             `超时释放${booking.roomName}`,
             booking.userId,
-            booking.userName
+            booking.userName,
+            { bookingId: booking.id }
           );
 
-          const startHour = parseInt(booking.startTime.split(':')[0], 10);
-          const endHour = parseInt(booking.endTime.split(':')[0], 10);
-          const updateTimeSlotStatus = useRoomStore.getState().updateTimeSlotStatus;
-          for (let h = startHour; h < endHour; h++) {
-            const slotId = `${booking.roomId}-${booking.date}-${h}`;
-            updateTimeSlotStatus(booking.roomId, slotId, 'available');
-          }
-
+          get()._setTimeSlotOccupied(booking.roomId, booking.date, booking.startTime, booking.endTime, 'available');
           get().notifyNextWaitlist(booking.roomId, booking.date, booking.startTime);
         }
       });

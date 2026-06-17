@@ -6,6 +6,7 @@ export default defineAppConfig({
     'pages/mine/index',
     'pages/room-detail/index',
     'pages/booking-confirm/index',
+    'pages/booking-reschedule/index',
     'pages/records/index',
     'pages/family-members/index'
   ],

@@ -83,6 +83,8 @@ export interface QuotaTransaction {
   operator: string;
   userId?: string;
   userName?: string;
+  bookingId?: string;
+  waitlistId?: string;
   createdAt: string;
 }
 
