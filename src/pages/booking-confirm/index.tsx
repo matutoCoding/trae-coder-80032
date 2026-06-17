@@ -7,7 +7,6 @@ import { getRoomById } from '@/services/roomService';
 import { createBooking } from '@/services/bookingService';
 import { useUserStore } from '@/store/useUserStore';
 import { useQuotaStore } from '@/store/useQuotaStore';
-import { useRoomStore } from '@/store/useRoomStore';
 import { getRoleText } from '@/utils/format';
 import { formatDuration } from '@/utils/time';
 import { Room, FamilyMember } from '@/types';
@@ -30,7 +29,6 @@ const BookingConfirmPage: React.FC = () => {
   const currentUserId = useUserStore((s) => s.currentUser.id);
   const allMembers = useUserStore((s) => s.allMembers);
   const quotaPool = useQuotaStore((s) => s.quotaPool);
-  const updateTimeSlotStatus = useRoomStore((s) => s.updateTimeSlotStatus);
 
   const [selectedUserId, setSelectedUserId] = useState<string>(currentUserId);
 
@@ -94,13 +92,6 @@ const BookingConfirmPage: React.FC = () => {
     setLoading(false);
 
     if (result.success) {
-      const startHour = parseInt((startTime as string).split(':')[0], 10);
-      const endHour = parseInt((endTime as string).split(':')[0], 10);
-      for (let h = startHour; h < endHour; h++) {
-        const slotId = `${room.id}-${date}-${h}`;
-        updateTimeSlotStatus(room.id, slotId, 'booked');
-      }
-
       setShowSuccess(true);
     } else {
       Taro.showToast({ title: result.message, icon: 'error' });

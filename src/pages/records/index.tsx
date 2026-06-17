@@ -16,12 +16,16 @@ const RecordsPage: React.FC = () => {
     setRefreshKey((k) => k + 1);
   });
 
-  const practiceRecords = useMemo(() => getPracticeRecords(), [refreshKey]);
   const allBookings = useMemo(() => getMyBookings(), [refreshKey]);
 
-  const totalHours = practiceRecords.reduce((sum, r) => sum + r.durationMinutes, 0);
-  const totalSessions = practiceRecords.length;
-  const completedSessions = practiceRecords.filter((r) => r.status === 'completed').length;
+  const totalMinutes = allBookings.reduce((sum, b) => {
+    if (b.status === 'completed' || b.status === 'checkin') {
+      return sum + b.duration;
+    }
+    return sum;
+  }, 0);
+  const totalSessions = allBookings.filter((b) => b.status !== 'cancelled' && b.status !== 'expired').length;
+  const completedSessions = allBookings.filter((b) => b.status === 'completed').length;
 
   const handleBookRoom = () => {
     Taro.switchTab({ url: '/pages/index/index' });
@@ -33,7 +37,7 @@ const RecordsPage: React.FC = () => {
         <StatCard
           variant='blue'
           title='累计练琴'
-          value={`${(totalHours / 60).toFixed(1)}`}
+          value={`${(totalMinutes / 60).toFixed(1)}`}
           unit='小时'
           grow
         />
@@ -68,6 +72,7 @@ const RecordsPage: React.FC = () => {
               {booking.status === 'completed' && '✓'}
               {booking.status === 'confirmed' && '⏰'}
               {booking.status === 'checkin' && '🎹'}
+              {booking.status === 'pending' && '🕐'}
               {booking.status === 'expired' && '✕'}
               {booking.status === 'cancelled' && '—'}
             </View>

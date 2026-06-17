@@ -24,10 +24,10 @@ export const getBookingStatusText = (status: string): string => {
   const map: Record<string, string> = {
     pending: '待确认',
     confirmed: '已确认',
-    checkin: '已签到',
+    checkin: '练琴中',
     completed: '已完成',
     cancelled: '已取消',
-    expired: '已超时'
+    expired: '已过期'
   };
   return map[status] || status;
 };

@@ -12,11 +12,13 @@ interface QueueStore {
   addToWaitlist: (item: Omit<WaitlistItem, 'id' | 'position' | 'status' | 'createdAt'>) => void;
   removeFromWaitlist: (id: string) => void;
   confirmWaitlist: (id: string) => Promise<{ success: boolean; message: string }>;
+  createBooking: (data: Omit<Booking, 'id' | 'status' | 'createdAt'>) => Promise<{ success: boolean; message: string; booking?: Booking }>;
   addBooking: (booking: Omit<Booking, 'id' | 'createdAt' | 'status'>) => void;
   cancelBooking: (id: string) => Promise<{ success: boolean; message: string }>;
   checkInBooking: (id: string) => void;
   processAutoRelease: () => void;
   notifyNextWaitlist: (roomId: string, date: string, startTime: string) => void;
+  _setTimeSlotOccupied: (roomId: string, date: string, startTime: string, endTime: string, status: 'booked' | 'available') => void;
 }
 
 const getStartOfToday = (): Date => {
@@ -104,13 +106,7 @@ export const useQueueStore = create<QueueStore>((set, get) => ({
       createdAt: formatDateTime()
     };
 
-    const startHour = parseInt(item.startTime.split(':')[0], 10);
-    const endHour = parseInt(item.endTime.split(':')[0], 10);
-    const updateTimeSlotStatus = useRoomStore.getState().updateTimeSlotStatus;
-    for (let h = startHour; h < endHour; h++) {
-      const slotId = `${item.roomId}-${item.date}-${h}`;
-      updateTimeSlotStatus(item.roomId, slotId, 'booked');
-    }
+    get()._setTimeSlotOccupied(item.roomId, item.date, item.startTime, item.endTime, 'booked');
 
     set((state) => ({
       waitlist: state.waitlist.map((w) =>
@@ -123,6 +119,46 @@ export const useQueueStore = create<QueueStore>((set, get) => ({
     return { success: true, message: '补位成功，已生成预约' };
   },
 
+  _setTimeSlotOccupied: (roomId, date, startTime, endTime, status) => {
+    const startHour = parseInt(startTime.split(':')[0], 10);
+    const endHour = parseInt(endTime.split(':')[0], 10);
+    const updateTimeSlotStatus = useRoomStore.getState().updateTimeSlotStatus;
+    for (let h = startHour; h < endHour; h++) {
+      const slotId = `${roomId}-${date}-${h}`;
+      updateTimeSlotStatus(roomId, slotId, status, date);
+    }
+  },
+
+  createBooking: async (data) => {
+    try {
+      const quotaSuccess = await useQuotaStore.getState().deductQuota(
+        data.quotaUsed,
+        `预约${data.roomName}`,
+        data.userId,
+        data.userName
+      );
+      if (!quotaSuccess) {
+        return { success: false, message: '额度不足或扣减失败' };
+      }
+
+      const newBooking: Booking = {
+        ...data,
+        id: `bk-${Date.now()}`,
+        status: 'confirmed',
+        createdAt: formatDateTime()
+      };
+
+      get()._setTimeSlotOccupied(data.roomId, data.date, data.startTime, data.endTime, 'booked');
+
+      set((state) => ({ bookings: [newBooking, ...state.bookings] }));
+      console.log('[Queue] Booking created (quota deducted & slot occupied):', newBooking.id);
+      return { success: true, message: '预约成功', booking: newBooking };
+    } catch (err) {
+      console.error('[Queue] Create booking failed:', err);
+      return { success: false, message: (err as Error).message };
+    }
+  },
+
   addBooking: (booking) => {
     const newBooking: Booking = {
       ...booking,
@@ -131,12 +167,24 @@ export const useQueueStore = create<QueueStore>((set, get) => ({
       createdAt: formatDateTime()
     };
     set((state) => ({ bookings: [newBooking, ...state.bookings] }));
-    console.log('[Queue] Booking added:', newBooking.id);
+    console.log('[Queue] Booking added (raw):', newBooking.id);
   },
 
   cancelBooking: async (id) => {
     const booking = get().bookings.find((b) => b.id === id);
     if (!booking) return { success: false, message: '预约不存在' };
+
+    if (booking.status === 'cancelled') {
+      return { success: true, message: '预约已取消' };
+    }
+
+    if (booking.status === 'expired') {
+      return { success: false, message: '预约已超时，无法取消' };
+    }
+
+    if (booking.status === 'completed' || booking.status === 'checkin') {
+      return { success: false, message: '已开始或已完成的预约不能取消' };
+    }
 
     const refundResult = await useQuotaStore.getState().refundQuota(
       booking.quotaUsed,
@@ -148,13 +196,7 @@ export const useQueueStore = create<QueueStore>((set, get) => ({
       console.warn('[Queue] Refund failed during cancel, proceeding anyway');
     }
 
-    const startHour = parseInt(booking.startTime.split(':')[0], 10);
-    const endHour = parseInt(booking.endTime.split(':')[0], 10);
-    const updateTimeSlotStatus = useRoomStore.getState().updateTimeSlotStatus;
-    for (let h = startHour; h < endHour; h++) {
-      const slotId = `${booking.roomId}-${booking.date}-${h}`;
-      updateTimeSlotStatus(booking.roomId, slotId, 'available');
-    }
+    get()._setTimeSlotOccupied(booking.roomId, booking.date, booking.startTime, booking.endTime, 'available');
 
     set((state) => ({
       bookings: state.bookings.map((b) =>
@@ -163,7 +205,7 @@ export const useQueueStore = create<QueueStore>((set, get) => ({
     }));
 
     get().notifyNextWaitlist(booking.roomId, booking.date, booking.startTime);
-    console.log('[Queue] Booking cancelled & refunded:', id);
+    console.log('[Queue] Booking cancelled & refunded (idempotent):', id);
     return { success: true, message: '取消成功，额度已退回' };
   },
 

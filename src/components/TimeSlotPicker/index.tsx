@@ -1,10 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { View, Text } from '@tarojs/components';
 import classnames from 'classnames';
 import styles from './index.module.scss';
 import { TimeSlot } from '@/types';
 import { getDateList, formatDate } from '@/utils/time';
-import { getTimeSlots as getRoomTimeSlots } from '@/services/roomService';
+import { useRoomStore } from '@/store/useRoomStore';
 
 interface TimeSlotPickerProps {
   roomId: string;
@@ -15,12 +15,19 @@ interface TimeSlotPickerProps {
 const TimeSlotPicker: React.FC<TimeSlotPickerProps> = ({ roomId, onSelect, multiSelect = false }) => {
   const [selectedDate, setSelectedDate] = useState<string>(formatDate());
   const [selectedSlots, setSelectedSlots] = useState<string[]>([]);
-  const [slots, setSlots] = useState<TimeSlot[]>([]);
   const dateList = getDateList(7);
 
+  const getTimeSlots = useRoomStore((state) => state.getTimeSlots);
+  const timeSlotsMap = useRoomStore((state) => state.timeSlots);
+
+  const slots = useMemo(() => {
+    const key = `${roomId}-${selectedDate}`;
+    const cached = timeSlotsMap[key];
+    if (cached) return cached;
+    return getTimeSlots(roomId, selectedDate);
+  }, [roomId, selectedDate, timeSlotsMap, getTimeSlots]);
+
   useEffect(() => {
-    const timeSlots = getRoomTimeSlots(roomId, selectedDate);
-    setSlots(timeSlots);
     setSelectedSlots([]);
   }, [roomId, selectedDate]);
 

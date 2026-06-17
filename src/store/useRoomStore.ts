@@ -12,7 +12,7 @@ interface RoomStore {
   setSelectedDate: (date: string) => void;
   getTimeSlots: (roomId: string, date?: string) => TimeSlot[];
   updateRoomStatus: (roomId: string, status: Room['status']) => void;
-  updateTimeSlotStatus: (roomId: string, slotId: string, status: TimeSlot['status']) => void;
+  updateTimeSlotStatus: (roomId: string, slotId: string, status: TimeSlot['status'], date?: string) => void;
   releaseExpiredBookings: () => void;
 }
 
@@ -36,11 +36,14 @@ export const useRoomStore = create<RoomStore>((set, get) => ({
     set((state) => ({
       rooms: state.rooms.map((r) => (r.id === roomId ? { ...r, status } : r))
     })),
-  updateTimeSlotStatus: (roomId, slotId, status) =>
+  updateTimeSlotStatus: (roomId, slotId, status, date) =>
     set((state) => {
-      const targetDate = state.selectedDate;
+      const targetDate = date || state.selectedDate;
       const key = `${roomId}-${targetDate}`;
-      const slots = state.timeSlots[key] || [];
+      let slots = state.timeSlots[key];
+      if (!slots) {
+        slots = getMockTimeSlots(roomId, targetDate);
+      }
       const updatedSlots = slots.map((s) =>
         s.id === slotId ? { ...s, status } : s
       );
