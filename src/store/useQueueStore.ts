@@ -21,6 +21,7 @@ interface QueueStore {
     target: { date: string; startTime: string; endTime: string; duration: number }
   ) => Promise<{ success: boolean; message: string; diffQuota?: number }>;
   processAutoRelease: () => void;
+  processWaitlistExpire: () => void;
   notifyNextWaitlist: (roomId: string, date: string, startTime: string) => void;
   _setTimeSlotOccupied: (roomId: string, date: string, startTime: string, endTime: string, status: 'booked' | 'available') => void;
 }
@@ -108,6 +109,7 @@ export const useQueueStore = create<QueueStore>((set, get) => ({
       duration: durationMin,
       status: 'confirmed',
       quotaUsed: quotaAmount,
+      rescheduleCount: 0,
       createdAt: formatDateTime()
     };
 
@@ -152,6 +154,7 @@ export const useQueueStore = create<QueueStore>((set, get) => ({
         ...data,
         id: tempBookingId,
         status: 'confirmed',
+        rescheduleCount: 0,
         createdAt: formatDateTime()
       };
 
@@ -234,16 +237,30 @@ export const useQueueStore = create<QueueStore>((set, get) => ({
       return { success: false, message: '当前状态不可改期' };
     }
 
+    const now = new Date();
+    const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+
+    if (booking.date <= todayStr) {
+      const [h, m] = booking.startTime.split(':').map(Number);
+      const startOfToday = getStartOfToday();
+      const startMs = startOfToday.getTime() + h * 3600 * 1000 + m * 60 * 1000;
+      if (now.getTime() >= startMs) {
+        return { success: false, message: '预约已开始或已过期，不能改期' };
+      }
+    }
+
     const newQuota = Math.max(1, Math.ceil(target.duration / 60));
     const diffQuota = newQuota - booking.quotaUsed;
+    const nextVersion = booking.rescheduleCount + 1;
+    const idempotentKey = `${booking.id}-resch-${nextVersion}`;
 
     if (diffQuota > 0) {
       const deductResult = await useQuotaStore.getState().deductQuota(
         diffQuota,
-        `改期补差额${booking.roomName}`,
+        `改期第${nextVersion}次补差额${booking.roomName}`,
         booking.userId,
         booking.userName,
-        { bookingId: `${booking.id}-resch-diff` }
+        { bookingId: idempotentKey }
       );
       if (!deductResult) {
         return { success: false, message: '额度不足，改期失败' };
@@ -251,10 +268,10 @@ export const useQueueStore = create<QueueStore>((set, get) => ({
     } else if (diffQuota < 0) {
       const refundResult = await useQuotaStore.getState().refundQuota(
         -diffQuota,
-        `改期退回差额${booking.roomName}`,
+        `改期第${nextVersion}次退回差额${booking.roomName}`,
         booking.userId,
         booking.userName,
-        { bookingId: `${booking.id}-resch-diff` }
+        { bookingId: idempotentKey }
       );
       if (!refundResult) {
         console.warn('[Queue] Reschedule refund difference failed, proceeding anyway');
@@ -273,13 +290,14 @@ export const useQueueStore = create<QueueStore>((set, get) => ({
               startTime: target.startTime,
               endTime: target.endTime,
               duration: target.duration,
-              quotaUsed: newQuota
+              quotaUsed: newQuota,
+              rescheduleCount: nextVersion
             }
           : b
       )
     }));
 
-    console.log('[Queue] Booking rescheduled:', id, 'diffQuota=', diffQuota);
+    console.log('[Queue] Booking rescheduled:', id, 'version=', nextVersion, 'diffQuota=', diffQuota);
     return { success: true, message: `改期成功，${diffQuota > 0 ? `补扣${diffQuota}额度` : diffQuota < 0 ? `退回${-diffQuota}额度` : '额度不变'}`, diffQuota };
   },
 
@@ -329,6 +347,43 @@ export const useQueueStore = create<QueueStore>((set, get) => ({
         }
       });
     }
+
+    get().processWaitlistExpire();
+  },
+
+  processWaitlistExpire: () => {
+    console.log('[Queue] Processing waitlist expire check...');
+    const now = new Date();
+    const parseDT = (s?: string): number => {
+      if (!s) return 0;
+      const [datePart, timePart] = s.split(' ');
+      if (!datePart || !timePart) return 0;
+      const [y, mo, d] = datePart.split('-').map(Number);
+      const [h, mi] = timePart.split(':').map(Number);
+      return new Date(y, mo - 1, d, h, mi, 0, 0).getTime();
+    };
+
+    const expiredIds: Array<{ id: string; roomId: string; date: string; startTime: string }> = [];
+
+    set((state) => {
+      const updated = state.waitlist.map((w) => {
+        if (w.status !== 'notified') return w;
+        const exp = parseDT(w.expiresAt);
+        if (exp > 0 && now.getTime() > exp) {
+          expiredIds.push({ id: w.id, roomId: w.roomId, date: w.date, startTime: w.startTime });
+          return { ...w, status: 'expired' as const };
+        }
+        return w;
+      });
+      return { waitlist: updated };
+    });
+
+    if (expiredIds.length > 0) {
+      console.log(`[Queue] Waitlist expired: ${expiredIds.length} items`);
+      expiredIds.forEach((e) => {
+        get().notifyNextWaitlist(e.roomId, e.date, e.startTime);
+      });
+    }
   },
 
   notifyNextWaitlist: (roomId, date, startTime) => {
@@ -343,18 +398,24 @@ export const useQueueStore = create<QueueStore>((set, get) => ({
       .sort((a, b) => a.position - b.position)[0];
 
     if (nextInLine) {
+      const now = new Date();
+      const notifyDT = formatDateTime();
+      const exp = new Date(now.getTime() + 10 * 60 * 1000);
+      const expStr = `${exp.getFullYear()}-${String(exp.getMonth() + 1).padStart(2, '0')}-${String(exp.getDate()).padStart(2, '0')} ${String(exp.getHours()).padStart(2, '0')}:${String(exp.getMinutes()).padStart(2, '0')}`;
+
       set((state) => ({
         waitlist: state.waitlist.map((w) =>
           w.id === nextInLine.id
-            ? { ...w, status: 'notified' as const, notifiedAt: formatDateTime() }
+            ? { ...w, status: 'notified' as const, notifiedAt: notifyDT, expiresAt: expStr }
             : w
         )
       }));
       console.log(
-        '[Queue] Notified next waitlist (same room/date/slot):',
+        '[Queue] Notified next waitlist (expires 10min):',
         nextInLine.id,
         nextInLine.userName,
-        `room=${roomId} date=${date} slot=${startTime}`
+        `room=${roomId} date=${date} slot=${startTime}`,
+        `expiresAt=${expStr}`
       );
     }
   }

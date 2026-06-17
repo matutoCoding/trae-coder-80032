@@ -19,6 +19,20 @@
   font-size: $font-size-xs;
   padding: 6rpx 20rpx;
   border-bottom-left-radius: $radius-md;
+
+  &.urgent {
+    background: $color-error;
+    animation: pulse 1s infinite;
+  }
+
+  &.expired {
+    background: $color-text-tertiary;
+  }
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
 }
 
 .itemHeader {
@@ -102,6 +116,11 @@
   font-size: $font-size-xs;
   color: $color-text-tertiary;
   margin-left: $spacing-sm;
+
+  &.urgent {
+    color: $color-error;
+    font-weight: $font-weight-semibold;
+  }
 }
 
 .actionRow {

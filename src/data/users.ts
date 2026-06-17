@@ -227,6 +227,7 @@ export const mockBookings: Booking[] = [
     duration: 120,
     status: 'confirmed',
     quotaUsed: 2,
+    rescheduleCount: 0,
     createdAt: '2026-06-16 20:00'
   },
   {
@@ -241,6 +242,7 @@ export const mockBookings: Booking[] = [
     duration: 60,
     status: 'pending',
     quotaUsed: 1,
+    rescheduleCount: 0,
     createdAt: '2026-06-17 09:30'
   },
   {
@@ -255,6 +257,7 @@ export const mockBookings: Booking[] = [
     duration: 180,
     status: 'confirmed',
     quotaUsed: 3,
+    rescheduleCount: 0,
     createdAt: '2026-06-15 15:00'
   }
 ];

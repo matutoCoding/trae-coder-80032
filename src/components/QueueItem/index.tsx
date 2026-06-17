@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, Text, Button } from '@tarojs/components';
 import Taro from '@tarojs/taro';
 import classnames from 'classnames';
@@ -12,8 +12,45 @@ interface QueueItemProps {
   onUpdate?: () => void;
 }
 
+const parseDateTime = (s?: string): number => {
+  if (!s) return 0;
+  const [datePart, timePart] = s.split(' ');
+  if (!datePart || !timePart) return 0;
+  const [y, mo, d] = datePart.split('-').map(Number);
+  const [h, mi] = timePart.split(':').map(Number);
+  return new Date(y, mo - 1, d, h, mi, 0, 0).getTime();
+};
+
+const formatRemain = (ms: number): { text: string; urgent: boolean } => {
+  if (ms <= 0) return { text: '已超时', urgent: true };
+  const totalSec = Math.floor(ms / 1000);
+  const min = Math.floor(totalSec / 60);
+  const sec = totalSec % 60;
+  const text = `${min}分${String(sec).padStart(2, '0')}秒`;
+  return { text, urgent: min < 2 };
+};
+
 const QueueItem: React.FC<QueueItemProps> = ({ item, onUpdate }) => {
+  const [, forceTick] = useState(0);
+
+  useEffect(() => {
+    if (item.status !== 'notified') return;
+    const t = setInterval(() => forceTick((x) => x + 1), 1000);
+    return () => clearInterval(t);
+  }, [item.status]);
+
+  const remain = item.status === 'notified' && item.expiresAt
+    ? formatRemain(parseDateTime(item.expiresAt) - Date.now())
+    : null;
+
+  const isExpired = remain?.text === '已超时';
+
   const handleConfirm = async () => {
+    if (isExpired) {
+      Taro.showToast({ title: '确认超时，已轮到下一位', icon: 'none' });
+      onUpdate?.();
+      return;
+    }
     const result = await confirmWaitlist(item.id);
     if (result.success) {
       Taro.showToast({ title: result.message, icon: 'success' });
@@ -46,8 +83,15 @@ const QueueItem: React.FC<QueueItemProps> = ({ item, onUpdate }) => {
 
   return (
     <View className={styles.queueItem}>
-      {item.status === 'notified' && (
-        <View className={styles.notifiedBadge}>请尽快确认</View>
+      {item.status === 'notified' && !isExpired && (
+        <View className={classnames(styles.notifiedBadge, remain?.urgent && styles.urgent)}>
+          请尽快确认 · 剩余 {remain?.text}
+        </View>
+      )}
+      {item.status === 'notified' && isExpired && (
+        <View className={classnames(styles.notifiedBadge, styles.expired)}>
+          确认超时，已轮到下一位
+        </View>
       )}
 
       <View className={styles.itemHeader}>
@@ -63,11 +107,11 @@ const QueueItem: React.FC<QueueItemProps> = ({ item, onUpdate }) => {
       </View>
 
       <View className={styles.statusRow}>
-        <View className={classnames(styles.statusTag, styles[item.status])}>
+        <View className={classnames(styles.statusTag, item.status)}>
           {getWaitlistStatusText(item.status)}
         </View>
         {item.status === 'notified' && item.expiresAt && (
-          <Text className={styles.expireInfo}>
+          <Text className={classnames(styles.expireInfo, remain?.urgent && styles.urgent)}>
             请于 {item.expiresAt.split(' ')[1]} 前确认
           </Text>
         )}
@@ -79,7 +123,7 @@ const QueueItem: React.FC<QueueItemProps> = ({ item, onUpdate }) => {
       </View>
 
       <View className={styles.actionRow}>
-        {item.status === 'notified' && (
+        {item.status === 'notified' && !isExpired && (
           <>
             <Button className={classnames(styles.actionBtn, styles.success)} onClick={handleConfirm}>
               立即确认补位
@@ -88,6 +132,11 @@ const QueueItem: React.FC<QueueItemProps> = ({ item, onUpdate }) => {
               放弃
             </Button>
           </>
+        )}
+        {(item.status === 'notified' && isExpired) && (
+          <Button className={classnames(styles.actionBtn, styles.primary)} onClick={onUpdate}>
+            刷新状态
+          </Button>
         )}
         {item.status === 'waiting' && (
           <Button className={classnames(styles.actionBtn, styles.danger)} onClick={handleCancel}>

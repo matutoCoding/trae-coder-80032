@@ -12,6 +12,7 @@ const QueuePage: React.FC = () => {
   const currentUser = useUserStore((s) => s.currentUser);
   const waitlist = useQueueStore((s) => s.waitlist);
   const processAutoRelease = useQueueStore((s) => s.processAutoRelease);
+  const processWaitlistExpire = useQueueStore((s) => s.processWaitlistExpire);
   const notifyNextWaitlist = useQueueStore((s) => s.notifyNextWaitlist);
 
   const [activeTab, setActiveTab] = useState<string>('mine');
@@ -19,12 +20,14 @@ const QueuePage: React.FC = () => {
 
   useDidShow(() => {
     processAutoRelease();
+    processWaitlistExpire();
     setRefreshKey((k) => k + 1);
     console.log('[QueuePage] Page shown');
   });
 
   const onPullDownRefresh = () => {
     processAutoRelease();
+    processWaitlistExpire();
     setRefreshKey((k) => k + 1);
     setTimeout(() => {
       Taro.stopPullDownRefresh();

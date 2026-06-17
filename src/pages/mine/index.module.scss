@@ -230,4 +230,158 @@
     background: $color-bg-page;
     color: $color-text-secondary;
   }
+
+  &.checkin {
+    background: $color-success;
+    color: $color-text-white;
+  }
+
+  &[disabled] {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}
+
+.weekSection {
+  margin: 0 $page-padding $spacing-md;
+  background: $color-bg-card;
+  border-radius: $radius-lg;
+  box-shadow: $shadow-card;
+  padding: $spacing-lg;
+}
+
+.weekHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: $spacing-md;
+}
+
+.weekTitle {
+  font-size: $font-size-lg;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+}
+
+.weekSub {
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+}
+
+.dayGroups {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-md;
+}
+
+.dayGroup {
+  border-left: 4rpx solid $color-primary;
+  padding-left: $spacing-md;
+}
+
+.dayLabel {
+  display: flex;
+  align-items: center;
+  gap: $spacing-sm;
+  margin-bottom: $spacing-sm;
+}
+
+.dayDate {
+  font-size: $font-size-md;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+}
+
+.dayWeek {
+  font-size: $font-size-sm;
+  color: $color-text-tertiary;
+}
+
+.dayCount {
+  font-size: $font-size-xs;
+  color: $color-primary;
+  background: rgba($color-primary, 0.08);
+  padding: 2rpx 12rpx;
+  border-radius: $radius-round;
+}
+
+.bookingItem {
+  background: $color-bg-page;
+  border-radius: $radius-md;
+  padding: $spacing-md;
+  margin-bottom: $spacing-sm;
+  border: 1rpx solid $color-divider;
+
+  &:last-child {
+    margin-bottom: 0;
+  }
+
+  &:active {
+    background: $color-bg-hover;
+  }
+}
+
+.bookingTop {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6rpx;
+}
+
+.bookingWho {
+  display: flex;
+  align-items: center;
+  gap: $spacing-xs;
+}
+
+.bookingWhoAvatar {
+  width: 36rpx;
+  height: 36rpx;
+  border-radius: $radius-round;
+}
+
+.bookingWhoName {
+  font-size: $font-size-sm;
+  color: $color-primary;
+  font-weight: $font-weight-medium;
+}
+
+.bookingStatus {
+  font-size: 20rpx;
+  padding: 2rpx 10rpx;
+  border-radius: $radius-round;
+
+  &.confirmed {
+    background: rgba($color-primary, 0.1);
+    color: $color-primary;
+  }
+
+  &.pending {
+    background: rgba($color-warning, 0.1);
+    color: $color-warning;
+  }
+
+  &.checkin {
+    background: rgba($color-success, 0.1);
+    color: $color-success;
+  }
+}
+
+.bookingWhen {
+  font-size: $font-size-sm;
+  color: $color-text-primary;
+  font-weight: $font-weight-medium;
+  margin-bottom: 2rpx;
+}
+
+.bookingRoom {
+  font-size: $font-size-xs;
+  color: $color-text-secondary;
+}
+
+.emptyWeek {
+  padding: 48rpx 0;
+  text-align: center;
+  color: $color-text-tertiary;
+  font-size: $font-size-sm;
 }

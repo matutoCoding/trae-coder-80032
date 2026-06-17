@@ -57,9 +57,13 @@ const QuotaPage: React.FC = () => {
   const memberMonthHours = useMemo(() => {
     const map: Record<string, number> = {};
     transactions.forEach((tx) => {
-      if (tx.type === 'consume' && tx.userId && tx.createdAt.startsWith(monthPrefix)) {
+      if (tx.userId && tx.createdAt.startsWith(monthPrefix)) {
         const absHours = Math.abs(tx.amount);
-        map[tx.userId] = (map[tx.userId] || 0) + absHours;
+        if (tx.type === 'consume') {
+          map[tx.userId] = (map[tx.userId] || 0) + absHours;
+        } else if (tx.type === 'refund') {
+          map[tx.userId] = (map[tx.userId] || 0) - absHours;
+        }
       }
     });
     return map;
@@ -74,11 +78,15 @@ const QuotaPage: React.FC = () => {
     let list = transactions;
     if (selectedMemberId !== 'all') {
       list = list.filter((tx) => {
-        if (tx.type === 'recharge') return true;
+        if (tx.type === 'recharge') return false;
         if (tx.userId === selectedMemberId) return true;
-        const waitlistTx = tx.description?.includes('候补补位');
-        if (waitlistTx) {
-          const wl = waitlist.find((w) => tx.waitlistId === w.id || (w.userId === selectedMemberId && tx.description.includes(w.roomName)));
+        if (tx.waitlistId) {
+          const wl = waitlist.find((w) => w.id === tx.waitlistId);
+          if (wl && wl.userId === selectedMemberId) return true;
+        }
+        const waitlistTxDesc = tx.description?.includes('候补补位');
+        if (waitlistTxDesc && !tx.userId) {
+          const wl = waitlist.find((w) => w.userId === selectedMemberId && tx.description.includes(w.roomName));
           return !!wl;
         }
         return false;

@@ -40,6 +40,7 @@ export interface Booking {
   duration: number;
   status: BookingStatus;
   quotaUsed: number;
+  rescheduleCount: number;
   createdAt: string;
   checkInTime?: string;
   checkOutTime?: string;
